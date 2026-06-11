@@ -30,24 +30,26 @@ class DatabaseSeeder extends Seeder
             'password' => config('site.user.password'),
         ]);
 
-        $liga = Competition::query()->create(['name' => 'Liga Betclic']);
-        $taca = Competition::query()->create(['name' => 'Taça de Portugal']);
-        $proliga = Competition::query()->create(['name' => 'Proliga']);
+        $competition1 = Competition::query()->create(['name' => 'Torneio Distrital']);
+        $competition2 = Competition::query()->create(['name' => 'Torneio Inter-Associações']);
+        $competition3 = Competition::query()->create(['name' => 'CN2']);
 
-        $senioresM = Category::query()->create(['competition_id' => $liga->id, 'name' => 'Seniores M']);
-        $senioresF = Category::query()->create(['competition_id' => $liga->id, 'name' => 'Seniores F']);
-        $sub18 = Category::query()->create(['competition_id' => $taca->id, 'name' => 'Sub-18']);
-        $proligaSen = Category::query()->create(['competition_id' => $proliga->id, 'name' => 'Seniores M']);
+        $category1 = Category::query()->create(['competition_id' => $competition1->id, 'name' => 'Sub-16 M']);
+        $category2 = Category::query()->create(['competition_id' => $competition1->id, 'name' => 'Sub-16 F']);
+        $category3 = Category::query()->create(['competition_id' => $competition1->id, 'name' => 'Sub-14 M']);
+        $category4 = Category::query()->create(['competition_id' => $competition1->id, 'name' => 'Sub-14 F']);
+        $category5 = Category::query()->create(['competition_id' => $competition1->id, 'name' => 'Sub-10']);
+        $category6 = Category::query()->create(['competition_id' => $competition3->id, 'name' => 'Séniores M']);
 
         $teamData = [
-            ['CB Águias', 'Pavilhão Municipal', [$senioresM->id, $proligaSen->id]],
-            ['FC Porto', 'Dragão Arena', [$senioresM->id, $senioresF->id]],
-            ['SL Benfica', 'Pavilhão Fidelidade', [$senioresM->id]],
-            ['Ovarense', 'Pavilhão Desportivo', [$senioresM->id, $proligaSen->id]],
-            ['SC Lusitânia', 'Pavilhão Municipal', [$senioresM->id]],
-            ['AD Galomar', 'Pavilhão Desportivo', [$sub18->id]],
-            ['Illiabum Clube', 'Pavilhão Municipal', [$sub18->id]],
-            ['Vitória SC', 'Pavilhão Desportivo', [$senioresF->id]],
+            ['AD Mealhada', 'Ventosa do Bairro', [$category1->id, $category2->id, $category3->id, $category4->id, $category5->id]],
+            ['ACR Vale de Cambra', 'Vale de Cambra', [$category1->id]],
+            ['Anadia', 'Anadia', [$category1->id]],
+            ['Atómicos', 'Oliveira do Bairro', [$category1->id]],
+            ['Arouca', 'Arouca', [$category1->id]],
+            ['GD Gafanha', 'Gafanha da Nazaré', [$category1->id]],
+            ['GICA', 'Águeda', [$category1->id]],
+            ['Sangalhos DC', 'Sangalhos', [$category1->id]],
         ];
 
         $teams = collect($teamData)->map(function (array $data) {
@@ -74,12 +76,12 @@ class DatabaseSeeder extends Seeder
         );
 
         $sessionNames = [
-            ['CB Águias vs FC Porto', 'basquetebol', '-5 days'],
-            ['Taça de Portugal: SL Benfica vs Ovarense', 'basquetebol', '-2 weeks'],
-            ['Torneio de Natal Sub-18', 'basquetebol', '-1 month'],
+            ['AD Mealhada vs Anadia', 'basquetebol', '-7 days'],
+            ['AD Mealhada vs Sangalhos DC', 'basquetebol', '-14 days'],
+            ['AD Mealhada vs GICA', 'basquetebol', '-21 days'],
             ['Gala de Dança 2026', 'danca', '-3 weeks'],
-            ['Espetáculo "Movimento Urbano"', 'danca', '-2 months'],
-            ['Liga Betclic: Jornada 20', 'basquetebol', '-6 days'],
+            ['Sangalhos DC vs GICA', 'basquetebol', '-21 days'],
+            ['Gala de Dança 2025', 'danca', '-5 weeks'],
         ];
 
         $sessions = collect($sessionNames)->map(function (array $data) use ($basquetebol, $danca) {
@@ -107,14 +109,13 @@ class DatabaseSeeder extends Seeder
         $basketSessions = $sessions->filter(fn (Session $session) => $session->type_id === $basquetebol->id)->values();
 
         $gamePairs = [
-            [$teams[0], $teams[1], $liga, $senioresM],
-            [$teams[2], $teams[3], $liga, $senioresM],
-            [$teams[4], $teams[0], $liga, $senioresM],
-            [$teams[1], $teams[2], $taca, $senioresM],
-            [$teams[5], $teams[6], $taca, $sub18],
-            [$teams[3], $teams[4], $proliga, $proligaSen],
-            [$teams[7], $teams[1], $liga, $senioresF],
-            [$teams[0], $teams[3], $liga, $senioresM],
+            [$teams[0], $teams[1], $competition1, $category1],
+            [$teams[1], $teams[2], $competition1, $category1],
+            [$teams[2], $teams[3], $competition1, $category2],
+            [$teams[3], $teams[4], $competition1, $category2],
+            [$teams[4], $teams[5], $competition1, $category3],
+            [$teams[5], $teams[6], $competition1, $category4],
+            [$teams[6], $teams[7], $competition1, $category4],
         ];
 
         foreach ($gamePairs as $index => [$home, $away, $competition, $category]) {
@@ -136,9 +137,9 @@ class DatabaseSeeder extends Seeder
         }
 
         $upcomingPairs = [
-            [$teams[0], $teams[2], $liga, $senioresM],
-            [$teams[1], $teams[4], $liga, $senioresM],
-            [$teams[6], $teams[5], $taca, $sub18],
+            [$teams[0], $teams[2], $competition1, $category1],
+            [$teams[3], $teams[0], $competition1, $category1],
+            [$teams[0], $teams[1], $competition1, $category1],
         ];
 
         foreach ($upcomingPairs as $index => [$home, $away, $competition, $category]) {
