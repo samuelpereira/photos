@@ -89,6 +89,6 @@ class Session extends Model
 
     public function typeLabel(): string
     {
-        return $this->sessionType?->name ?? '';
+        return $this->sessionType->name ?? '';
     }
 }

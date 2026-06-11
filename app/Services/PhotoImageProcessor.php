@@ -153,7 +153,13 @@ class PhotoImageProcessor
                 return;
             }
 
-            $disk->put($variantPath, file_get_contents($tempPath), ['visibility' => 'public']);
+            $contents = file_get_contents($tempPath);
+
+            if ($contents === false) {
+                return;
+            }
+
+            $disk->put($variantPath, $contents, ['visibility' => 'public']);
         } finally {
             @unlink($tempPath);
         }

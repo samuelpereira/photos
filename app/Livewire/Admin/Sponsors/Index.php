@@ -77,7 +77,13 @@ class Index extends Component
                 PhotoStorage::disk()->delete($logoPath);
             }
 
-            $logoPath = $this->logo->store('sponsors', config('photos.disk', 'public'));
+            $storedPath = $this->logo->store('sponsors', config('photos.disk', 'public'));
+
+            if ($storedPath === false) {
+                return;
+            }
+
+            $logoPath = $storedPath;
 
             if (! PhotoStorage::isLocal()) {
                 PhotoStorage::disk()->setVisibility($logoPath, 'public');
