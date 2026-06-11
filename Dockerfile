@@ -5,6 +5,7 @@ RUN apt upgrade -y
 
 # 1. development packages
 RUN apt-get update && apt-get install -y \
+    fonts-dejavu-core \
     git zip curl sudo unzip \
     libicu-dev \
     libbz2-dev \

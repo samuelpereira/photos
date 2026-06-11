@@ -11,9 +11,36 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group heading="Plataforma" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group heading="Gestão" class="grid">
+                    <flux:sidebar.item icon="trophy" :href="route('admin.games.index')" :current="request()->routeIs('admin.games.*')" wire:navigate>
+                        Jogos
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="photo" :href="route('admin.sessions.index')" :current="request()->routeIs('admin.sessions.*')" wire:navigate>
+                        Sessões
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="building-storefront" :href="route('admin.sponsors.index')" :current="request()->routeIs('admin.sponsors.*')" wire:navigate>
+                        Patrocinadores
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group heading="Configuração" class="grid">
+                    <flux:sidebar.item icon="flag" :href="route('admin.settings.competitions')" :current="request()->routeIs('admin.settings.competitions')" wire:navigate>
+                        Competições
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="rectangle-stack" :href="route('admin.settings.categories')" :current="request()->routeIs('admin.settings.categories')" wire:navigate>
+                        Escalões
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="user-group" :href="route('admin.settings.teams')" :current="request()->routeIs('admin.settings.teams')" wire:navigate>
+                        Equipas
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="tag" :href="route('admin.settings.types')" :current="request()->routeIs('admin.settings.types')" wire:navigate>
+                        Tipos
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -21,12 +48,8 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
+                <flux:sidebar.item icon="globe-alt" :href="route('home')" target="_blank">
+                    Ver site
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 
