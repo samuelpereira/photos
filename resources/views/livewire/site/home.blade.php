@@ -25,18 +25,18 @@
 
             <div class="mt-8 flex flex-wrap gap-4">
                 <a
-                    href="{{ route('sessions.index') }}"
+                    href="{{ route('games.index') }}"
                     wire:navigate
                     class="rounded-full bg-orange-500 px-7 py-3 font-bold text-zinc-950 uppercase transition-colors hover:bg-orange-400"
                 >
-                    Ver sessões
+                    Jogos
                 </a>
                 <a
-                    href="{{ route('games.index') }}"
+                    href="{{ route('sessions.index') }}"
                     wire:navigate
                     class="rounded-full border border-white/20 px-7 py-3 font-bold uppercase backdrop-blur-sm transition-colors hover:bg-white/10"
                 >
-                    Jogos
+                    Sessões
                 </a>
             </div>
         </div>

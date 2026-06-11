@@ -4,6 +4,9 @@
     <div class="flex shrink-0 flex-col text-xs text-zinc-500 sm:w-32">
         <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $game->tip_off_at->translatedFormat('j M Y') }}</span>
         <span>{{ $game->competition ?? 'Amigável' }}</span>
+        @if ($game->category)
+            <span>{{ $game->category }}</span>
+        @endif
     </div>
 
     <div class="flex flex-1 items-center justify-between gap-4">

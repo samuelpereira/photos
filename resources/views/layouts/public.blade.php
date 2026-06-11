@@ -30,8 +30,8 @@
                 <div class="flex items-center gap-1 text-sm font-medium sm:gap-2">
                     @foreach ([
                         ['route' => 'home', 'label' => 'Início'],
-                        ['route' => 'sessions.index', 'label' => 'Sessões'],
                         ['route' => 'games.index', 'label' => 'Jogos'],
+                        ['route' => 'sessions.index', 'label' => 'Sessões'],
                         ['route' => 'contact', 'label' => 'Contactos'],
                     ] as $item)
                         <a
@@ -76,12 +76,9 @@
                 </p>
 
                 <div class="flex items-center gap-6 text-sm text-zinc-500">
-                    <a href="{{ route('sessions.index') }}" wire:navigate class="hover:text-zinc-900 dark:hover:text-white">Sessões</a>
                     <a href="{{ route('games.index') }}" wire:navigate class="hover:text-zinc-900 dark:hover:text-white">Jogos</a>
+                    <a href="{{ route('sessions.index') }}" wire:navigate class="hover:text-zinc-900 dark:hover:text-white">Sessões</a>
                     <a href="{{ route('contact') }}" wire:navigate class="hover:text-zinc-900 dark:hover:text-white">Contactos</a>
-                    @guest
-                        <a href="{{ route('login') }}" class="hover:text-zinc-900 dark:hover:text-white">Área reservada</a>
-                    @endguest
                 </div>
             </div>
         </footer>
