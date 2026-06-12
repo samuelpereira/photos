@@ -1,7 +1,7 @@
 @props(['game'])
 
 <div class="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:flex-row sm:items-center sm:gap-6 sm:px-6 dark:border-white/5 dark:bg-zinc-900">
-    <div class="flex shrink-0 flex-col text-xs text-zinc-500 sm:w-32">
+    <div class="flex shrink-0 flex-row flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 sm:w-32 sm:flex-col sm:items-start sm:gap-0">
         <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $game->tip_off_at->translatedFormat('j M Y') }}</span>
         <span>{{ $game->competition ?? 'Amigável' }}</span>
         @if ($game->category)
@@ -9,16 +9,16 @@
         @endif
     </div>
 
-    <div class="flex flex-1 items-center justify-between gap-4">
+    <div class="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:flex sm:gap-4">
         <span @class([
-            'flex-1 truncate text-right font-bold uppercase tracking-tight',
+            'truncate text-right text-sm font-bold uppercase tracking-tight sm:flex-1 sm:text-base',
             'text-zinc-900 dark:text-white' => $game->hasResult() && $game->home_score >= $game->away_score,
             'text-zinc-400 dark:text-zinc-500' => $game->hasResult() && $game->home_score < $game->away_score,
         ])>
             {{ $game->home_team }}
         </span>
 
-        <span class="shrink-0 rounded-lg bg-zinc-100 px-3 py-1.5 font-mono text-lg font-black tracking-widest text-orange-500 dark:bg-zinc-950 dark:text-orange-400">
+        <span class="shrink-0 rounded-lg bg-zinc-100 px-2.5 py-1 font-mono text-base font-black tracking-widest text-orange-500 sm:px-3 sm:py-1.5 sm:text-lg dark:bg-zinc-950 dark:text-orange-400">
             @if ($game->hasResult())
                 {{ $game->home_score }}&ndash;{{ $game->away_score }}
             @else
@@ -27,7 +27,7 @@
         </span>
 
         <span @class([
-            'flex-1 truncate font-bold uppercase tracking-tight',
+            'truncate text-sm font-bold uppercase tracking-tight sm:flex-1 sm:text-base',
             'text-zinc-900 dark:text-white' => $game->hasResult() && $game->away_score >= $game->home_score,
             'text-zinc-400 dark:text-zinc-500' => $game->hasResult() && $game->away_score < $game->home_score,
         ])>

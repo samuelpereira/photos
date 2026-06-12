@@ -13,28 +13,28 @@
 
         <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/30"></div>
 
-        <div class="relative mx-auto w-full max-w-7xl px-4 pt-32 pb-20 text-white sm:px-6 lg:px-8">
-            <p class="mb-3 text-sm font-bold tracking-[0.3em] text-orange-400 uppercase">Fotografia desportiva &amp; espetáculos</p>
-            <h1 class="max-w-3xl text-4xl leading-none font-black tracking-tight uppercase sm:text-6xl lg:text-7xl">
+        <div class="relative mx-auto w-full max-w-7xl px-4 pt-24 pb-16 text-white sm:px-6 sm:pt-32 sm:pb-20 lg:px-8">
+            <p class="mb-3 text-xs font-bold tracking-[0.25em] text-orange-400 uppercase sm:text-sm sm:tracking-[0.3em]">Fotografia desportiva &amp; espetáculos</p>
+            <h1 class="max-w-3xl text-3xl leading-none font-black tracking-tight uppercase sm:text-6xl lg:text-7xl">
                 Cada jogada,<br />
                 <span class="text-orange-500">um momento</span> único
             </h1>
-            <p class="mt-6 max-w-xl text-lg text-zinc-300">
+            <p class="mt-4 max-w-xl text-base text-zinc-300 sm:mt-6 sm:text-lg">
                 Cobertura fotográfica de jogos de basquetebol e espetáculos de dança. Explora as galerias e revive cada momento.
             </p>
 
-            <div class="mt-8 flex flex-wrap gap-4">
+            <div class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
                 <a
                     href="{{ route('games.index') }}"
                     wire:navigate
-                    class="rounded-full bg-orange-500 px-7 py-3 font-bold text-zinc-950 uppercase transition-colors hover:bg-orange-400"
+                    class="rounded-full bg-orange-500 px-7 py-3 text-center font-bold text-zinc-950 uppercase transition-colors hover:bg-orange-400"
                 >
                     Jogos
                 </a>
                 <a
                     href="{{ route('sessions.index') }}"
                     wire:navigate
-                    class="rounded-full border border-white/20 px-7 py-3 font-bold uppercase backdrop-blur-sm transition-colors hover:bg-white/10"
+                    class="rounded-full border border-white/20 px-7 py-3 text-center font-bold uppercase backdrop-blur-sm transition-colors hover:bg-white/10"
                 >
                     Sessões
                 </a>
@@ -44,8 +44,8 @@
 
     {{-- Jogos da semana --}}
     @if ($weekGames->isNotEmpty())
-        <section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-            <div class="mb-8 flex items-end justify-between">
+        <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+            <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Agenda</p>
                     <h2 class="text-3xl font-black tracking-tight uppercase sm:text-4xl">Jogos da semana</h2>
@@ -67,8 +67,8 @@
 
     {{-- Eventos recentes --}}
     <section class="border-y border-zinc-200 bg-zinc-50 dark:border-white/5 dark:bg-zinc-900/40">
-        <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-            <div class="mb-8 flex items-end justify-between">
+        <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+            <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Portefólio</p>
                     <h2 class="text-3xl font-black tracking-tight uppercase sm:text-4xl">Sessões recentes</h2>
@@ -92,8 +92,8 @@
 
     {{-- Últimos resultados --}}
     @if ($recentResults->isNotEmpty())
-        <section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-            <div class="mb-8 flex items-end justify-between">
+        <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+            <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Arquivo</p>
                     <h2 class="text-3xl font-black tracking-tight uppercase sm:text-4xl">Últimos resultados</h2>

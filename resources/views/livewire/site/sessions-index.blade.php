@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 sm:pb-20 lg:px-8">
     <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Portefólio</p>
     <h1 class="text-4xl font-black tracking-tight uppercase sm:text-5xl">Sessões</h1>
 

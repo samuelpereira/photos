@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 sm:pb-20 lg:px-8">
     <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Fala comigo</p>
     <h1 class="text-4xl font-black tracking-tight uppercase sm:text-5xl">Contactos</h1>
 
@@ -7,7 +7,7 @@
     </p>
 
     <div class="mt-12 grid gap-6 lg:grid-cols-2">
-        <section class="rounded-2xl border border-zinc-200 bg-white p-8 dark:border-white/5 dark:bg-zinc-900">
+        <section class="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/5 dark:bg-zinc-900 sm:p-8">
             <h2 class="text-xl font-black tracking-tight uppercase">Informações</h2>
 
             <dl class="mt-6 space-y-6">
@@ -49,7 +49,7 @@
             </dl>
         </section>
 
-        <section class="flex flex-col justify-between rounded-2xl border border-orange-500/20 bg-gradient-to-br from-zinc-50 to-white p-8 dark:from-zinc-900 dark:to-zinc-950">
+        <section class="flex flex-col justify-between rounded-2xl border border-orange-500/20 bg-gradient-to-br from-zinc-50 to-white p-6 dark:from-zinc-900 dark:to-zinc-950 sm:p-8">
             <div>
                 <h2 class="text-xl font-black tracking-tight uppercase">Redes sociais</h2>
                 <p class="mt-3 text-zinc-600 dark:text-zinc-400">

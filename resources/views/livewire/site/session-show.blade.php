@@ -17,7 +17,7 @@
         @endif
         <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/30"></div>
 
-        <div class="relative mx-auto w-full max-w-7xl px-4 pt-28 pb-12 text-white sm:px-6 lg:px-8">
+        <div class="relative mx-auto w-full max-w-7xl px-4 pt-24 pb-10 text-white sm:px-6 sm:pt-28 sm:pb-12 lg:px-8">
             <a href="{{ route('sessions.index') }}" wire:navigate class="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-zinc-300 hover:text-white">
                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
