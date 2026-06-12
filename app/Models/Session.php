@@ -99,7 +99,7 @@ class Session extends Model
     {
         $photo = $this->coverPhoto ?? $this->photos->first();
 
-        return $photo?->thumbnailUrl();
+        return $photo?->url();
     }
 
     public function typeLabel(): string
