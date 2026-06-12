@@ -4,7 +4,6 @@ namespace App\Livewire\Admin\Sessions;
 
 use App\Models\Session;
 use App\Models\SessionType;
-use App\Services\PhotoImageProcessor;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -80,13 +79,7 @@ class Index extends Component
 
     public function delete(int $sessionId): void
     {
-        $session = Session::query()->findOrFail($sessionId);
-
-        foreach ($session->photos as $photo) {
-            app(PhotoImageProcessor::class)->deleteFiles($photo);
-        }
-
-        $session->delete();
+        Session::query()->findOrFail($sessionId)->delete();
 
         Flux::toast(variant: 'success', text: 'Sessão eliminada.');
     }

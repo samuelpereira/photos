@@ -6,6 +6,8 @@ return [
 
     'disk' => env('PHOTO_STORAGE_DISK', 'public'),
 
+    'original_disk' => env('PHOTO_ORIGINAL_DISK', env('PHOTO_STORAGE_DISK') === 's3' ? 's3' : 'local'),
+
     'thumbnail_max_width' => (int) env('PHOTO_THUMBNAIL_MAX_WIDTH', 1200),
 
     'thumbnail_quality' => (int) env('PHOTO_THUMBNAIL_QUALITY', 82),

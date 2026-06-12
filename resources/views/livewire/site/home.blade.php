@@ -25,7 +25,7 @@
         @if ($heroPhotos->isNotEmpty())
             @foreach ($heroPhotos as $index => $heroPhoto)
                 <img
-                    src="{{ $heroPhoto->thumbnailUrl() }}"
+                    src="{{ $heroPhoto->url() }}"
                     alt="{{ $heroPhoto->caption ?? config('app.name') }}"
                     @class([
                         'absolute inset-0 size-full object-cover transition-opacity duration-1000 ease-in-out',

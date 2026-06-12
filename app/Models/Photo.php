@@ -73,9 +73,13 @@ class Photo extends Model
         return $this->url();
     }
 
-    /** Original sem marca de água (admin). */
+    /** Original sem marca de água (admin, rota autenticada). */
     public function originalUrl(): string
     {
-        return PhotoStorage::url($this->path);
+        if (str_starts_with($this->path, 'http')) {
+            return $this->path;
+        }
+
+        return route('admin.photos.original', $this);
     }
 }

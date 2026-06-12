@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PhotoImageProcessor;
 use Database\Factories\SessionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +41,20 @@ class Session extends Model
             'session_date' => 'date',
             'is_published' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Session $session): void {
+            $processor = app(PhotoImageProcessor::class);
+            $session->loadMissing('photos');
+
+            foreach ($session->photos as $photo) {
+                $processor->deleteFiles($photo);
+            }
+
+            $processor->deleteSessionStorage($session->id);
+        });
     }
 
     public function getRouteKeyName(): string

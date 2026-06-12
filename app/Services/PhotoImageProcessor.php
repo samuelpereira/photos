@@ -9,69 +9,104 @@ use Illuminate\Support\Str;
 
 class PhotoImageProcessor
 {
-    public function generateThumbnail(string $originalPath): ?string
+    /**
+     * @return array{original: string, thumbnail: string, display: string}
+     */
+    public function buildStoragePaths(int $sessionId, string $extension): array
     {
-        return $this->generateVariant(
-            $originalPath,
-            $this->thumbnailPathFor($originalPath),
-            config('photos.thumbnail_max_width', 1200),
-        );
-    }
+        $extension = strtolower(ltrim($extension, '.') ?: 'jpg');
 
-    public function generateDisplay(string $originalPath): ?string
-    {
-        return $this->generateVariant(
-            $originalPath,
-            $this->displayPathFor($originalPath),
-            config('photos.display_max_width', 2400),
-        );
+        return [
+            'original' => "private/sessions/{$sessionId}/".Str::uuid().'.'.$extension,
+            'thumbnail' => "public/{$sessionId}/thumbs/".Str::uuid().'.'.$extension,
+            'display' => "public/{$sessionId}/display/".Str::uuid().'.'.$extension,
+        ];
     }
 
     /**
-     * @return array{thumbnail: ?string, display: ?string}
+     * @return array{path: ?string, thumbnail: ?string, display: ?string}
      */
-    public function storeUploadedFile(string $localSourcePath, string $storagePath): array
+    public function storeUploadedFile(string $localSourcePath, int $sessionId, string $extension): array
     {
+        $paths = $this->buildStoragePaths($sessionId, $extension);
         $contents = file_get_contents($localSourcePath);
 
         if ($contents === false) {
-            return ['thumbnail' => null, 'display' => null];
+            return ['path' => null, 'thumbnail' => null, 'display' => null];
         }
 
-        $disk = PhotoStorage::disk();
-        $options = PhotoStorage::isLocal() ? [] : ['visibility' => 'public'];
-        $disk->put($storagePath, $contents, $options);
+        $this->storeOriginal($paths['original'], $contents);
+        $variants = $this->createVariantsFromLocalFile($localSourcePath, $paths['thumbnail'], $paths['display']);
 
-        return $this->createVariantsFromLocalFile($localSourcePath, $storagePath);
+        if ($variants['thumbnail'] === null && $variants['display'] === null) {
+            PhotoStorage::originalDisk()->delete($paths['original']);
+
+            return ['path' => null, 'thumbnail' => null, 'display' => null];
+        }
+
+        return [
+            'path' => $paths['original'],
+            'thumbnail' => $variants['thumbnail'],
+            'display' => $variants['display'],
+        ];
     }
 
     /**
      * @return array{thumbnail: ?string, display: ?string}
      */
-    public function generateVariants(string $originalPath): array
+    public function regenerateVariants(Photo $photo): array
     {
-        [$sourcePath, $deleteSource] = $this->resolveSourcePath($originalPath);
+        [$sourcePath, $deleteSource] = $this->resolveSourcePath($photo->path);
 
         if ($sourcePath === null) {
             return ['thumbnail' => null, 'display' => null];
         }
 
+        $extension = pathinfo($photo->path, PATHINFO_EXTENSION) ?: 'jpg';
+        $paths = $this->buildStoragePaths($photo->session_id, $extension);
+        $oldVariantPaths = [$photo->thumbnail_path, $photo->display_path];
+
         try {
-            return $this->createVariantsFromLocalFile($sourcePath, $originalPath);
+            $variants = $this->createVariantsFromLocalFile($sourcePath, $paths['thumbnail'], $paths['display']);
         } finally {
             if ($deleteSource) {
                 @unlink($sourcePath);
             }
         }
+
+        if ($variants['thumbnail'] === null && $variants['display'] === null) {
+            return ['thumbnail' => null, 'display' => null];
+        }
+
+        $this->deleteStoredPaths($oldVariantPaths);
+
+        return $variants;
+    }
+
+    public function deleteFiles(Photo $photo): void
+    {
+        if (str_starts_with($photo->path, 'http')) {
+            return;
+        }
+
+        $this->deleteStoredPaths([
+            $photo->path,
+            $photo->thumbnail_path,
+            $photo->display_path,
+        ]);
+    }
+
+    public function deleteSessionStorage(int $sessionId): void
+    {
+        PhotoStorage::publicDisk()->deleteDirectory("public/{$sessionId}");
+        PhotoStorage::originalDisk()->deleteDirectory("private/sessions/{$sessionId}");
     }
 
     /**
      * @return array{thumbnail: ?string, display: ?string}
      */
-    private function createVariantsFromLocalFile(string $localSourcePath, string $originalPath): array
+    private function createVariantsFromLocalFile(string $localSourcePath, string $thumbnailPath, string $displayPath): array
     {
-        $thumbnailPath = $this->thumbnailPathFor($originalPath);
-        $displayPath = $this->displayPathFor($originalPath);
         $thumbnailMax = (int) config('photos.thumbnail_max_width', 1200);
         $displayMax = (int) config('photos.display_max_width', 2400);
 
@@ -96,84 +131,58 @@ class PhotoImageProcessor
 
         $thumbnailVariant = $this->resizeImageToMaxWidth($workingImage, $thumbnailMax, $type);
         $this->applyTextWatermark($thumbnailVariant);
-        $this->storeVariant($thumbnailPath, $thumbnailVariant, $type);
+        $this->storePublicVariant($thumbnailPath, $thumbnailVariant, $type);
         imagedestroy($thumbnailVariant);
 
         $this->applyTextWatermark($workingImage);
-        $this->storeVariant($displayPath, $workingImage, $type);
+        $this->storePublicVariant($displayPath, $workingImage, $type);
         imagedestroy($workingImage);
 
         return ['thumbnail' => $thumbnailPath, 'display' => $displayPath];
     }
 
-    public function thumbnailPathFor(string $originalPath): string
+    private function storeOriginal(string $path, string $contents): void
     {
-        return dirname($originalPath).'/thumbs/'.basename($originalPath);
-    }
+        $disk = PhotoStorage::originalDisk();
 
-    public function displayPathFor(string $originalPath): string
-    {
-        return dirname($originalPath).'/display/'.basename($originalPath);
-    }
+        if (PhotoStorage::isOriginalLocal()) {
+            $disk->makeDirectory(dirname($path));
+            $disk->put($path, $contents);
 
-    public function deleteFiles(Photo $photo): void
-    {
-        $disk = PhotoStorage::disk();
-
-        foreach ([$photo->path, $photo->thumbnail_path, $photo->display_path] as $path) {
-            if ($path && ! str_starts_with($path, 'http')) {
-                $disk->delete($path);
-            }
-        }
-    }
-
-    private function generateVariant(string $originalPath, string $variantPath, int $maxWidth): ?string
-    {
-        [$sourcePath, $deleteSource] = $this->resolveSourcePath($originalPath);
-
-        if ($sourcePath === null) {
-            return null;
+            return;
         }
 
-        try {
-            $imageInfo = @getimagesize($sourcePath);
+        $disk->put($path, $contents, ['visibility' => 'private']);
+    }
 
-            if ($imageInfo === false) {
-                return null;
+    /** @param  array<int, string|null>  $paths */
+    private function deleteStoredPaths(array $paths): void
+    {
+        foreach ($paths as $path) {
+            if ($path === null || str_starts_with($path, 'http')) {
+                continue;
             }
 
-            [$width, $height, $type] = $imageInfo;
-            $sourceImage = $this->createImageResource($sourcePath, $type);
+            if (PhotoStorage::isOriginalPath($path)) {
+                PhotoStorage::originalDisk()->delete($path);
 
-            if ($sourceImage === null) {
-                return null;
+                continue;
             }
 
-            $variant = $this->resizeImageToMaxWidth($sourceImage, $maxWidth, $type);
-
-            if ($variant !== $sourceImage) {
-                imagedestroy($sourceImage);
-            }
-
-            $this->applyTextWatermark($variant);
-            $this->storeVariant($variantPath, $variant, $type);
-
-            imagedestroy($variant);
-
-            return $variantPath;
-        } finally {
-            if ($deleteSource) {
-                @unlink($sourcePath);
-            }
+            PhotoStorage::publicDisk()->delete($path);
         }
     }
 
     /** @return array{0: ?string, 1: bool} */
     private function resolveSourcePath(string $path): array
     {
-        $disk = PhotoStorage::disk();
+        if (str_starts_with($path, 'http')) {
+            return [null, false];
+        }
 
-        if (PhotoStorage::isLocal()) {
+        $disk = PhotoStorage::originalDisk();
+
+        if (PhotoStorage::isOriginalLocal()) {
             $localPath = $disk->path($path);
 
             return [is_file($localPath) ? $localPath : null, false];
@@ -189,14 +198,14 @@ class PhotoImageProcessor
         return [$tempPath, true];
     }
 
-    private function storeVariant(string $variantPath, GdImage $variant, int $type): void
+    private function storePublicVariant(string $variantPath, GdImage $variant, int $type): void
     {
         $tempPath = $this->temporaryOutputPath($type);
 
         try {
             $this->saveImage($variant, $tempPath, $type);
 
-            $disk = PhotoStorage::disk();
+            $disk = PhotoStorage::publicDisk();
 
             if (PhotoStorage::isLocal()) {
                 $disk->makeDirectory(dirname($variantPath));

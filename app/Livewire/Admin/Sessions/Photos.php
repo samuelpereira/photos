@@ -8,7 +8,6 @@ use App\Services\PhotoImageProcessor;
 use App\Support\PhotoStorage;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -58,21 +57,21 @@ class Photos extends Component
                 }
 
                 $extension = strtolower($upload->getClientOriginalExtension() ?: 'jpg');
-                $path = "sessions/{$this->session->id}/".Str::uuid().".{$extension}";
+                $stored = $processor->storeUploadedFile($localPath, $this->session->id, $extension);
 
-                $variants = $processor->storeUploadedFile($localPath, $path);
-
-                if ($variants['thumbnail'] === null && $variants['display'] === null) {
-                    PhotoStorage::disk()->delete($path);
+                if ($stored['path'] === null || ($stored['thumbnail'] === null && $stored['display'] === null)) {
+                    if ($stored['path'] !== null) {
+                        PhotoStorage::originalDisk()->delete($stored['path']);
+                    }
                     $failedCount++;
 
                     continue;
                 }
 
                 $this->session->photos()->create([
-                    'path' => $path,
-                    'thumbnail_path' => $variants['thumbnail'],
-                    'display_path' => $variants['display'],
+                    'path' => $stored['path'],
+                    'thumbnail_path' => $stored['thumbnail'],
+                    'display_path' => $stored['display'],
                     'sort_order' => $nextOrder++,
                 ]);
 

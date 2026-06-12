@@ -13,24 +13,26 @@ test('homepage banner carousel includes all featured photos', function () {
     $session = Session::factory()->create();
     $first = Photo::factory()->create([
         'session_id' => $session->id,
-        'path' => 'sessions/1/first.jpg',
-        'thumbnail_path' => 'sessions/1/first-thumb.jpg',
+        'path' => 'private/sessions/1/first.jpg',
+        'thumbnail_path' => 'public/1/thumbs/first.jpg',
+        'display_path' => 'public/1/display/first.jpg',
         'is_featured' => true,
     ]);
     $second = Photo::factory()->create([
         'session_id' => $session->id,
-        'path' => 'sessions/1/second.jpg',
-        'thumbnail_path' => 'sessions/1/second-thumb.jpg',
+        'path' => 'private/sessions/1/second.jpg',
+        'thumbnail_path' => 'public/1/thumbs/second.jpg',
+        'display_path' => 'public/1/display/second.jpg',
         'is_featured' => true,
     ]);
 
-    Storage::disk('public')->put('sessions/1/first-thumb.jpg', 'first');
-    Storage::disk('public')->put('sessions/1/second-thumb.jpg', 'second');
+    Storage::disk('public')->put('public/1/display/first.jpg', 'first');
+    Storage::disk('public')->put('public/1/display/second.jpg', 'second');
 
     $response = $this->get(route('home'))->assertOk();
 
-    $response->assertSee($first->thumbnailUrl(), false);
-    $response->assertSee($second->thumbnailUrl(), false);
+    $response->assertSee($first->url(), false);
+    $response->assertSee($second->url(), false);
     $response->assertSee('Banner 1', false);
     $response->assertSee('Banner 2', false);
 });

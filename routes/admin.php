@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PhotoOriginalController;
 use App\Livewire\Admin\Games\Index as GamesIndex;
 use App\Livewire\Admin\Sessions\Index as SessionsIndex;
 use App\Livewire\Admin\Sessions\Photos as SessionsPhotos;
@@ -11,6 +12,7 @@ use App\Livewire\Admin\Sponsors\Index as SponsorsIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
+    Route::get('photos/{photo}/original', PhotoOriginalController::class)->name('admin.photos.original');
     Route::livewire('sessions', SessionsIndex::class)->name('admin.sessions.index');
     Route::livewire('sessions/{session}/photos', SessionsPhotos::class)->name('admin.sessions.photos');
     Route::livewire('jogos', GamesIndex::class)->name('admin.games.index');

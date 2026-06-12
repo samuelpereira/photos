@@ -36,7 +36,7 @@ class RegeneratePhotoThumbnails extends Command
         $processed = 0;
 
         foreach ($photos as $photo) {
-            $variants = $processor->generateVariants($photo->path);
+            $variants = $processor->regenerateVariants($photo);
 
             if ($variants['thumbnail'] || $variants['display']) {
                 $photo->update([
