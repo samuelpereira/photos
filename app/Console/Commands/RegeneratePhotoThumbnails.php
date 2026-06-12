@@ -36,13 +36,12 @@ class RegeneratePhotoThumbnails extends Command
         $processed = 0;
 
         foreach ($photos as $photo) {
-            $thumbnailPath = $processor->generateThumbnail($photo->path);
-            $displayPath = $processor->generateDisplay($photo->path);
+            $variants = $processor->generateVariants($photo->path);
 
-            if ($thumbnailPath || $displayPath) {
+            if ($variants['thumbnail'] || $variants['display']) {
                 $photo->update([
-                    'thumbnail_path' => $thumbnailPath ?? $photo->thumbnail_path,
-                    'display_path' => $displayPath ?? $photo->display_path,
+                    'thumbnail_path' => $variants['thumbnail'] ?? $photo->thumbnail_path,
+                    'display_path' => $variants['display'] ?? $photo->display_path,
                 ]);
                 $processed++;
             }

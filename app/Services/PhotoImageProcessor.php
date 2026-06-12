@@ -27,6 +27,85 @@ class PhotoImageProcessor
         );
     }
 
+    /**
+     * @return array{thumbnail: ?string, display: ?string}
+     */
+    public function storeUploadedFile(string $localSourcePath, string $storagePath): array
+    {
+        $contents = file_get_contents($localSourcePath);
+
+        if ($contents === false) {
+            return ['thumbnail' => null, 'display' => null];
+        }
+
+        $disk = PhotoStorage::disk();
+        $options = PhotoStorage::isLocal() ? [] : ['visibility' => 'public'];
+        $disk->put($storagePath, $contents, $options);
+
+        return $this->createVariantsFromLocalFile($localSourcePath, $storagePath);
+    }
+
+    /**
+     * @return array{thumbnail: ?string, display: ?string}
+     */
+    public function generateVariants(string $originalPath): array
+    {
+        [$sourcePath, $deleteSource] = $this->resolveSourcePath($originalPath);
+
+        if ($sourcePath === null) {
+            return ['thumbnail' => null, 'display' => null];
+        }
+
+        try {
+            return $this->createVariantsFromLocalFile($sourcePath, $originalPath);
+        } finally {
+            if ($deleteSource) {
+                @unlink($sourcePath);
+            }
+        }
+    }
+
+    /**
+     * @return array{thumbnail: ?string, display: ?string}
+     */
+    private function createVariantsFromLocalFile(string $localSourcePath, string $originalPath): array
+    {
+        $thumbnailPath = $this->thumbnailPathFor($originalPath);
+        $displayPath = $this->displayPathFor($originalPath);
+        $thumbnailMax = (int) config('photos.thumbnail_max_width', 1200);
+        $displayMax = (int) config('photos.display_max_width', 2400);
+
+        $imageInfo = @getimagesize($localSourcePath);
+
+        if ($imageInfo === false) {
+            return ['thumbnail' => null, 'display' => null];
+        }
+
+        [, , $type] = $imageInfo;
+        $sourceImage = $this->createImageResource($localSourcePath, $type);
+
+        if ($sourceImage === null) {
+            return ['thumbnail' => null, 'display' => null];
+        }
+
+        $workingImage = $this->resizeImageToMaxWidth($sourceImage, $displayMax, $type);
+
+        if ($workingImage !== $sourceImage) {
+            imagedestroy($sourceImage);
+        }
+
+        $thumbnailVariant = $this->resizeImageToMaxWidth($workingImage, $thumbnailMax, $type);
+        $this->applyTextWatermark($thumbnailVariant);
+        $this->storeVariant($thumbnailPath, $thumbnailVariant, $type);
+        imagedestroy($thumbnailVariant);
+
+        $this->applyTextWatermark($workingImage);
+        $this->storeVariant($displayPath, $workingImage, $type);
+        imagedestroy($workingImage);
+
+        return ['thumbnail' => $thumbnailPath, 'display' => $displayPath];
+    }
+
     public function thumbnailPathFor(string $originalPath): string
     {
         return dirname($originalPath).'/thumbs/'.basename($originalPath);
@@ -70,39 +149,15 @@ class PhotoImageProcessor
                 return null;
             }
 
-            $scale = min(1, $maxWidth / $width);
-            $newWidth = max(1, (int) round($width * $scale));
-            $newHeight = max(1, (int) round($height * $scale));
+            $variant = $this->resizeImageToMaxWidth($sourceImage, $maxWidth, $type);
 
-            $variant = imagecreatetruecolor($newWidth, $newHeight);
-
-            if (in_array($type, [IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF], true)) {
-                imagealphablending($variant, false);
-                imagesavealpha($variant, true);
-                $transparent = imagecolorallocatealpha($variant, 0, 0, 0, 127);
-
-                if ($transparent !== false) {
-                    imagefill($variant, 0, 0, $transparent);
-                }
+            if ($variant !== $sourceImage) {
+                imagedestroy($sourceImage);
             }
-
-            imagecopyresampled(
-                $variant,
-                $sourceImage,
-                0,
-                0,
-                0,
-                0,
-                $newWidth,
-                $newHeight,
-                $width,
-                $height,
-            );
 
             $this->applyTextWatermark($variant);
             $this->storeVariant($variantPath, $variant, $type);
 
-            imagedestroy($sourceImage);
             imagedestroy($variant);
 
             return $variantPath;
@@ -261,6 +316,45 @@ class PhotoImageProcessor
         }
 
         return null;
+    }
+
+    private function resizeImageToMaxWidth(GdImage $sourceImage, int $maxWidth, int $type): GdImage
+    {
+        $width = imagesx($sourceImage);
+        $height = imagesy($sourceImage);
+
+        if ($width <= $maxWidth) {
+            return $sourceImage;
+        }
+
+        $newWidth = max(1, $maxWidth);
+        $newHeight = max(1, (int) round($height * ($maxWidth / $width)));
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+
+        if (in_array($type, [IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF], true)) {
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            $transparent = imagecolorallocatealpha($resized, 0, 0, 0, 127);
+
+            if ($transparent !== false) {
+                imagefill($resized, 0, 0, $transparent);
+            }
+        }
+
+        imagecopyresampled(
+            $resized,
+            $sourceImage,
+            0,
+            0,
+            0,
+            0,
+            $newWidth,
+            $newHeight,
+            $width,
+            $height,
+        );
+
+        return $resized;
     }
 
     private function createImageResource(string $path, int $type): ?GdImage

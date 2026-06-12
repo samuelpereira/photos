@@ -2,6 +2,8 @@
 
 return [
 
+    'max_upload_kb' => (int) env('PHOTO_MAX_UPLOAD_KB', 25600),
+
     'disk' => env('PHOTO_STORAGE_DISK', 'public'),
 
     'thumbnail_max_width' => (int) env('PHOTO_THUMBNAIL_MAX_WIDTH', 1200),

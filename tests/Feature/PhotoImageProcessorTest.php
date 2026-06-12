@@ -63,6 +63,35 @@ test('photo urls use the configured storage disk', function () {
     expect($photo->originalUrl())->toBe(PhotoStorage::url('sessions/1/photo.jpg'));
 });
 
+test('livewire temporary upload limit matches photo upload config', function () {
+    expect(config('livewire.temporary_file_upload.disk'))->toBe('local');
+    expect(config('livewire.temporary_file_upload.rules'))->toContain('max:'.config('photos.max_upload_kb'));
+});
+
+test('stores uploaded file and generates variants from local source', function () {
+    $originalPath = 'sessions/1/large-photo.jpg';
+    $source = Storage::disk('public')->path($originalPath);
+    Storage::disk('public')->makeDirectory('sessions/1');
+
+    $image = imagecreatetruecolor(6000, 4000);
+    imagejpeg($image, $source, 90);
+    imagedestroy($image);
+
+    $processor = app(PhotoImageProcessor::class);
+    $variants = $processor->storeUploadedFile($source, $originalPath);
+
+    expect($variants['thumbnail'])->toBe('sessions/1/thumbs/large-photo.jpg');
+    expect($variants['display'])->toBe('sessions/1/display/large-photo.jpg');
+    expect(Storage::disk('public')->exists($variants['thumbnail']))->toBeTrue();
+    expect(Storage::disk('public')->exists($variants['display']))->toBeTrue();
+
+    [$thumbnailWidth] = getimagesize(Storage::disk('public')->path($variants['thumbnail']));
+    [$displayWidth] = getimagesize(Storage::disk('public')->path($variants['display']));
+
+    expect($thumbnailWidth)->toBe(1200);
+    expect($displayWidth)->toBe(2400);
+});
+
 test('deletes original, thumbnail and display files for a photo', function () {
     Storage::disk('public')->put('sessions/1/photo.jpg', 'original');
     Storage::disk('public')->put('sessions/1/thumbs/photo.jpg', 'thumbnail');

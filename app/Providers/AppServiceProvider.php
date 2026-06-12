@@ -46,5 +46,16 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+
+        config([
+            'livewire.temporary_file_upload.disk' => 'local',
+            'livewire.temporary_file_upload.rules' => [
+                'required',
+                'file',
+                'image',
+                'max:'.(int) config('photos.max_upload_kb', 25600),
+            ],
+            'livewire.temporary_file_upload.max_upload_time' => 10,
+        ]);
     }
 }

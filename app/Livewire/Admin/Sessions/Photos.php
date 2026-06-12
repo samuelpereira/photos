@@ -8,6 +8,7 @@ use App\Services\PhotoImageProcessor;
 use App\Support\PhotoStorage;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -32,38 +33,74 @@ class Photos extends Component
 
     public function updatedUploads(): void
     {
+        $maxUploadKb = (int) config('photos.max_upload_kb', 25600);
+
         $this->validate([
-            'uploads.*' => ['image', 'max:15360'],
+            'uploads.*' => ['image', 'max:'.$maxUploadKb],
+        ], [
+            'uploads.*.max' => 'Cada foto pode ter no máximo '.intval($maxUploadKb / 1024).' MB.',
+            'uploads.*.image' => 'Apenas imagens JPG, PNG ou WebP são aceites.',
         ]);
 
         $nextOrder = (int) $this->session->photos()->max('sort_order') + 1;
-
         $processor = app(PhotoImageProcessor::class);
+        $uploadedCount = 0;
+        $failedCount = 0;
 
         foreach ($this->uploads as $upload) {
-            $path = $upload->store("sessions/{$this->session->id}", config('photos.disk', 'public'));
+            try {
+                $localPath = $upload->getRealPath();
 
-            if (! is_string($path)) {
-                continue;
+                if (! is_readable($localPath)) {
+                    $failedCount++;
+
+                    continue;
+                }
+
+                $extension = strtolower($upload->getClientOriginalExtension() ?: 'jpg');
+                $path = "sessions/{$this->session->id}/".Str::uuid().".{$extension}";
+
+                $variants = $processor->storeUploadedFile($localPath, $path);
+
+                if ($variants['thumbnail'] === null && $variants['display'] === null) {
+                    PhotoStorage::disk()->delete($path);
+                    $failedCount++;
+
+                    continue;
+                }
+
+                $this->session->photos()->create([
+                    'path' => $path,
+                    'thumbnail_path' => $variants['thumbnail'],
+                    'display_path' => $variants['display'],
+                    'sort_order' => $nextOrder++,
+                ]);
+
+                $uploadedCount++;
+            } catch (\Throwable $exception) {
+                report($exception);
+                $failedCount++;
             }
-
-            if (! PhotoStorage::isLocal()) {
-                PhotoStorage::disk()->setVisibility($path, 'public');
-            }
-
-            $this->session->photos()->create([
-                'path' => $path,
-                'thumbnail_path' => $processor->generateThumbnail($path),
-                'display_path' => $processor->generateDisplay($path),
-                'sort_order' => $nextOrder++,
-            ]);
         }
 
-        $count = count($this->uploads);
         $this->reset('uploads');
         $this->refreshSession();
 
-        Flux::toast(variant: 'success', text: $count.' '.($count === 1 ? 'foto adicionada.' : 'fotos adicionadas.'));
+        if ($uploadedCount > 0) {
+            Flux::toast(
+                variant: 'success',
+                text: $uploadedCount.' '.($uploadedCount === 1 ? 'foto adicionada.' : 'fotos adicionadas.'),
+            );
+        }
+
+        if ($failedCount > 0) {
+            Flux::toast(
+                variant: 'danger',
+                text: $failedCount === 1
+                    ? 'Não foi possível processar 1 foto. Verifica o tamanho ou o formato.'
+                    : "Não foi possível processar {$failedCount} fotos. Verifica o tamanho ou o formato.",
+            );
+        }
     }
 
     public function updatedCaptions(?string $value, string $key): void
