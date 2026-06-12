@@ -6,6 +6,35 @@ use App\Models\Session;
 use App\Models\Sponsor;
 use Illuminate\Support\Facades\Storage;
 
+test('homepage banner carousel includes all featured photos', function () {
+    config(['photos.disk' => 'public']);
+    Storage::fake('public');
+
+    $session = Session::factory()->create();
+    $first = Photo::factory()->create([
+        'session_id' => $session->id,
+        'path' => 'sessions/1/first.jpg',
+        'thumbnail_path' => 'sessions/1/first-thumb.jpg',
+        'is_featured' => true,
+    ]);
+    $second = Photo::factory()->create([
+        'session_id' => $session->id,
+        'path' => 'sessions/1/second.jpg',
+        'thumbnail_path' => 'sessions/1/second-thumb.jpg',
+        'is_featured' => true,
+    ]);
+
+    Storage::disk('public')->put('sessions/1/first-thumb.jpg', 'first');
+    Storage::disk('public')->put('sessions/1/second-thumb.jpg', 'second');
+
+    $response = $this->get(route('home'))->assertOk();
+
+    $response->assertSee($first->thumbnailUrl(), false);
+    $response->assertSee($second->thumbnailUrl(), false);
+    $response->assertSee('Banner 1', false);
+    $response->assertSee('Banner 2', false);
+});
+
 test('homepage loads with sessions and games', function () {
     $session = Session::factory()->create();
     Photo::factory()->count(2)->create(['session_id' => $session->id, 'is_cover' => true]);

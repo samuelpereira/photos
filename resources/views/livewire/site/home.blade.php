@@ -1,17 +1,65 @@
 <div>
     {{-- Hero / banner --}}
-    <section class="relative flex min-h-svh items-end overflow-hidden">
-        @if ($heroPhoto)
-            <img
-                src="{{ $heroPhoto->thumbnailUrl() }}"
-                alt="{{ $heroPhoto->caption ?? config('app.name') }}"
-                class="absolute inset-0 size-full object-cover"
-            />
+    <section
+        class="relative flex min-h-svh items-end overflow-hidden"
+        @if ($heroPhotos->count() > 1)
+            x-data="{
+                current: 0,
+                total: {{ $heroPhotos->count() }},
+                timer: null,
+                init() {
+                    this.timer = setInterval(() => this.next(), 6000);
+                },
+                next() {
+                    this.current = (this.current + 1) % this.total;
+                },
+                goTo(index) {
+                    this.current = index;
+                },
+                destroy() {
+                    clearInterval(this.timer);
+                },
+            }"
+        @endif
+    >
+        @if ($heroPhotos->isNotEmpty())
+            @foreach ($heroPhotos as $index => $heroPhoto)
+                <img
+                    src="{{ $heroPhoto->thumbnailUrl() }}"
+                    alt="{{ $heroPhoto->caption ?? config('app.name') }}"
+                    @class([
+                        'absolute inset-0 size-full object-cover transition-opacity duration-1000 ease-in-out',
+                        'opacity-100' => $heroPhotos->count() === 1,
+                    ])
+                    @if ($heroPhotos->count() > 1)
+                        :class="current === {{ $index }} ? 'opacity-100' : 'opacity-0'"
+                    @endif
+                    @if ($index === 0)
+                        fetchpriority="high"
+                    @else
+                        loading="lazy"
+                    @endif
+                />
+            @endforeach
         @else
             <div class="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black"></div>
         @endif
 
-        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/30"></div>
+        @if ($heroPhotos->count() > 1)
+            <div class="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center gap-2 sm:bottom-8">
+                @foreach ($heroPhotos as $index => $heroPhoto)
+                    <button
+                        type="button"
+                        class="pointer-events-auto size-2 rounded-full transition-colors"
+                        :class="current === {{ $index }} ? 'bg-white' : 'bg-white/40 hover:bg-white/70'"
+                        x-on:click="goTo({{ $index }})"
+                        aria-label="Banner {{ $index + 1 }}"
+                    ></button>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/30"></div>
 
         <div class="relative mx-auto w-full max-w-7xl px-4 pt-24 pb-16 text-white sm:px-6 sm:pt-32 sm:pb-20 lg:px-8">
             <p class="mb-3 text-xs font-bold tracking-[0.25em] text-orange-400 uppercase sm:text-sm sm:tracking-[0.3em]">Fotografia desportiva &amp; espetáculos</p>

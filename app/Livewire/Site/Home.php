@@ -17,11 +17,11 @@ class Home extends Component
     public function render(): View
     {
         return view('livewire.site.home', [
-            'heroPhoto' => Photo::query()
+            'heroPhotos' => Photo::query()
                 ->where('is_featured', true)
                 ->whereHas('session', fn ($query) => $query->where('is_published', true))
-                ->latest()
-                ->first(),
+                ->latest('updated_at')
+                ->get(),
             'weekGames' => Game::query()->thisWeek()->limit(4)->get(),
             'recentSessions' => Session::query()
                 ->published()

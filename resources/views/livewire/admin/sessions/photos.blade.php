@@ -61,7 +61,7 @@
     @if ($session->photos->isEmpty())
         <flux:text>Esta sessão ainda não tem fotos.</flux:text>
     @else
-        <flux:text class="text-sm text-zinc-500">Arrasta uma foto para reordenar (ícone <flux:icon.bars-3 class="inline size-4 align-text-bottom" /> ou qualquer parte da imagem).</flux:text>
+        <flux:text class="text-sm text-zinc-500">Arrasta uma foto para reordenar.</flux:text>
 
         <div
             class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
