@@ -118,7 +118,7 @@
         <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
             <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Portefólio</p>
+                    <p class="text-sm font-bold tracking-widest text-orange-400 uppercase">Portfólio</p>
                     <h2 class="text-3xl font-black tracking-tight uppercase sm:text-4xl">Sessões recentes</h2>
                 </div>
                 <a href="{{ route('sessions.index') }}" wire:navigate class="text-sm font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
