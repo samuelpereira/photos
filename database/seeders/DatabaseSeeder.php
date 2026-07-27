@@ -15,11 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->firstOrCreate([
-            'name' => config('site.user.name'),
-            'email' => config('site.user.email'),
-            'password' => config('site.user.password'),
-        ]);
+        $email = config('site.user.email');
+
+        if (is_string($email) && $email !== '') {
+            User::query()->firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => (string) config('site.user.name'),
+                    'password' => (string) config('site.user.password'),
+                ],
+            );
+        }
 
         if (app()->environment('local')) {
             $this->call(DevelopmentSeeder::class);

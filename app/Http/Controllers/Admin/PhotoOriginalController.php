@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Photo;
 use App\Support\PhotoStorage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class PhotoOriginalController extends Controller
 {
-    public function __invoke(Photo $photo): StreamedResponse
+    public function __invoke(Photo $photo): Response
     {
         if (str_starts_with($photo->path, 'http')) {
             abort(404);

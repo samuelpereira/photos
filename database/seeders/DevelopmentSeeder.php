@@ -12,7 +12,9 @@ use App\Models\Sponsor;
 use App\Models\Team;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class DevelopmentSeeder extends Seeder
 {
@@ -44,6 +46,7 @@ class DevelopmentSeeder extends Seeder
             ['Sangalhos DC', 'Sangalhos', [$category1->id]],
         ];
 
+        /** @var Collection<int, Team> $teams */
         $teams = collect($teamData)->map(function (array $data) {
             [$name, $venue, $categoryIds] = $data;
 
@@ -55,7 +58,10 @@ class DevelopmentSeeder extends Seeder
             $team->categories()->sync($categoryIds);
 
             return $team;
-        });
+        })->values();
+
+        $teamAt = fn (int $index): Team => $teams->get($index)
+            ?? throw new RuntimeException("Team at index {$index} is missing.");
 
         $basquetebol = SessionType::query()->firstOrCreate(
             ['slug' => 'basquetebol'],
@@ -91,23 +97,23 @@ class DevelopmentSeeder extends Seeder
                 ->sequence(fn ($sequence) => ['sort_order' => $sequence->index])
                 ->create(['session_id' => $session->id]);
 
-            $session->photos()->first()->update(['is_cover' => true]);
+            $session->photos()->first()?->update(['is_cover' => true]);
 
             return $session;
         });
 
-        $sessions->first()->photos()->skip(1)->first()->update(['is_featured' => true]);
+        $sessions->first()?->photos()->skip(1)->first()?->update(['is_featured' => true]);
 
         $basketSessions = $sessions->filter(fn (Session $session) => $session->type_id === $basquetebol->id)->values();
 
         $gamePairs = [
-            [$teams[0], $teams[1], $competition1, $category1],
-            [$teams[1], $teams[2], $competition1, $category1],
-            [$teams[2], $teams[3], $competition1, $category2],
-            [$teams[3], $teams[4], $competition1, $category2],
-            [$teams[4], $teams[5], $competition1, $category3],
-            [$teams[5], $teams[6], $competition1, $category4],
-            [$teams[6], $teams[7], $competition1, $category4],
+            [$teamAt(0), $teamAt(1), $competition1, $category1],
+            [$teamAt(1), $teamAt(2), $competition1, $category1],
+            [$teamAt(2), $teamAt(3), $competition1, $category2],
+            [$teamAt(3), $teamAt(4), $competition1, $category2],
+            [$teamAt(4), $teamAt(5), $competition1, $category3],
+            [$teamAt(5), $teamAt(6), $competition1, $category4],
+            [$teamAt(6), $teamAt(7), $competition1, $category4],
         ];
 
         foreach ($gamePairs as $index => [$home, $away, $competition, $category]) {
@@ -129,9 +135,9 @@ class DevelopmentSeeder extends Seeder
         }
 
         $upcomingPairs = [
-            [$teams[0], $teams[2], $competition1, $category1],
-            [$teams[3], $teams[0], $competition1, $category1],
-            [$teams[0], $teams[1], $competition1, $category1],
+            [$teamAt(0), $teamAt(2), $competition1, $category1],
+            [$teamAt(3), $teamAt(0), $competition1, $category1],
+            [$teamAt(0), $teamAt(1), $competition1, $category1],
         ];
 
         foreach ($upcomingPairs as $index => [$home, $away, $competition, $category]) {
