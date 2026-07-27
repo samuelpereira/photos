@@ -5,6 +5,8 @@ services:
       args:
         uid: ${UID}
     container_name: ${DOCKER_NAME}-app
+    depends_on:
+      - mysql-db
     environment:
       - APACHE_RUN_USER=#${UID}
       - APACHE_RUN_GROUP=#${UID}
